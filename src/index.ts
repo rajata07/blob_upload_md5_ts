@@ -4,7 +4,6 @@ import {
   ContainerClient
 } from '@azure/storage-blob';
 import * as dotenv from 'dotenv';
-import { promises as fs } from 'fs';
 import path from 'path';
 import filesystem from "fs";
 import * as crypto from "crypto";
@@ -27,20 +26,19 @@ async function uploadBlobFromBuffer(
   await blockBlobClient.uploadData(buffer);
 }
 // </Snippet_UploadBlob>
-
 async function main(blobServiceClient: BlobServiceClient) {
   const blobs: Promise<void>[] = [];
 
-  const containerClient = blobServiceClient.getContainerClient('biggerbucket');
+  const containerClient = blobServiceClient.getContainerClient(process.env.AZURE_CONTAINER_NAME as string) ;
 
   // Get fully qualified path of file
-  const localFilePath: string = path.join('files', '1GB.bin');
+  const localFilePath: string = path.join('files', 'sample.txt');
 
   // Create the container if it doesn't exist
   await containerClient.createIfNotExists();
 
   // Get a block blob client
-  const blockBlobClient: BlockBlobClient = containerClient.getBlockBlobClient(localFilePath);
+  const blockBlobClient: BlockBlobClient = containerClient.getBlockBlobClient('sample.txt');
 
   // Read the file content as a buffer
   const fileContentBuffer = filesystem.readFileSync(localFilePath);
@@ -62,8 +60,7 @@ async function main(blobServiceClient: BlobServiceClient) {
 }
 
 function calculateContentMD5(content: string | Buffer): string {
-  const md5Hash = crypto.createHash("md5").update(content).digest("hex");
-  return md5Hash;
+  return crypto.createHash("md5").update(content).digest("hex");
 }
 
 
